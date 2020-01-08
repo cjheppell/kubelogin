@@ -28,14 +28,15 @@ type Interface interface {
 
 // Input represents an input DTO of the GetToken use-case.
 type Input struct {
-	IssuerURL      string
-	ClientID       string
-	ClientSecret   string
-	ExtraScopes    []string // optional
-	CACertFilename string   // If set, use the CA cert
-	SkipTLSVerify  bool
-	TokenCacheDir  string
-	GrantOptionSet authentication.GrantOptionSet
+	IssuerURL           string
+	ClientID            string
+	ClientSecret        string
+	ExtraScopes         []string // optional
+	CACertFilename      string   // If set, use the CA cert
+	SkipTLSVerify       bool
+	TokenCacheDir       string
+	GrantOptionSet      authentication.GrantOptionSet
+	IgnoreRefreshTokens bool
 }
 
 type GetToken struct {
@@ -107,6 +108,11 @@ func (u *GetToken) getTokenFromCacheOrProvider(ctx context.Context, in Input) (*
 		IDToken:      out.IDToken,
 		RefreshToken: out.RefreshToken,
 	}
+
+	if in.IgnoreRefreshTokens {
+		newTokenCacheValue.RefreshToken = ""
+	}
+
 	if err := u.TokenCacheRepository.Save(in.TokenCacheDir, tokenCacheKey, newTokenCacheValue); err != nil {
 		return nil, xerrors.Errorf("could not write the token cache: %w", err)
 	}

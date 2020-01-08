@@ -20,6 +20,7 @@ type getTokenOptions struct {
 	SkipTLSVerify         bool
 	TokenCacheDir         string
 	authenticationOptions authenticationOptions
+	IgnoreRefreshTokens    bool
 }
 
 func (o *getTokenOptions) register(f *pflag.FlagSet) {
@@ -31,6 +32,7 @@ func (o *getTokenOptions) register(f *pflag.FlagSet) {
 	f.StringVar(&o.CertificateAuthority, "certificate-authority", "", "Path to a cert file for the certificate authority")
 	f.BoolVar(&o.SkipTLSVerify, "insecure-skip-tls-verify", false, "If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure")
 	f.StringVar(&o.TokenCacheDir, "token-cache-dir", defaultTokenCacheDir, "Path to a directory for caching tokens")
+	f.BoolVar(&o.IgnoreRefreshTokens, "ignore-refresh-tokens", false, "If true, the refresh token received as part of the authorization code flow will be ignored completely")
 	o.authenticationOptions.register(f)
 }
 
@@ -70,6 +72,7 @@ func (cmd *GetToken) New(ctx context.Context) *cobra.Command {
 				SkipTLSVerify:  o.SkipTLSVerify,
 				TokenCacheDir:  o.TokenCacheDir,
 				GrantOptionSet: grantOptionSet,
+				IgnoreRefreshTokens: o.IgnoreRefreshTokens,
 			}
 			if err := cmd.GetToken.Do(ctx, in); err != nil {
 				return xerrors.Errorf("error: %w", err)
